@@ -4,14 +4,15 @@
 
     and https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html#robot-centric-final-sample-code
  */
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name="Mecanum Drive (Robot Relative)", group = "OpMode")
-//@Disabled   // comment this out to add to the OpMode list on the Driver Hub
+@Disabled   // comment this out to add to the OpMode list on the Driver Hub
 public class MecanumTeleOpRobotRelative extends LinearOpMode {
 
     private DcMotor frontLeftDrive = null;

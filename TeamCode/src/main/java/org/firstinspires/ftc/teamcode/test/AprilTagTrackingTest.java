@@ -1,7 +1,7 @@
 /*
     Program to test autonomous AprilTag tracking with the Limelight 3A.
  */
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
