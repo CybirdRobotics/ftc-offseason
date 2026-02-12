@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,24 +11,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class MecanumDrive {
 
-    // Declare an OpMode object to gain access to methods in the calling OpMode.
-    private LinearOpMode myOpMode = null;
-
     // Declare motor and IMU objects (and make them private to prevent external access)
     private DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
     private IMU imu;
 
+    //GoBildaPinpointDriver pinpoint;
+
     // Declare drive constants (and make them public so they can be used by the calling OpMode).
     public static final double speedLimiter = 0.45;  // speedLimiter reduces movement speed to a specified % of maximum (1.0). Used for outreach events.
 
-    /*
-    // Define a constructor that allows the OpMode to pass a reference to itself.
-    public MecanumDrive (LinearOpMode opmode) {
-        myOpMode = opmode;
-    }
-    */
-
     public void init(HardwareMap hwMap) {
+    //public void init(HardwareMap hwMap, boolean isGoBildaPinPointIMU) {
 
         // Initialize the hardware variables. Note that the strings specified here as parameters must match the names assigned in the robot controller configuration.
         frontLeftDrive = hwMap.get(DcMotor.class, "front_left_drive");
@@ -63,6 +57,10 @@ public class MecanumDrive {
 
     public void resetYaw() {
         imu.resetYaw();
+    }
+
+    public double getHeading() {
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
     }
 
     public void driveFieldRelative(double forward, double strafe, double turn) {
@@ -104,16 +102,6 @@ public class MecanumDrive {
         backLeftDrive.setPower(squarePower(backLeftPower));
         frontRightDrive.setPower(squarePower(frontRightPower));
         backRightDrive.setPower(squarePower(backRightPower));
-
-        /*
-        myOpMode.telemetry.addData("maxPower", scaleFactor);
-        myOpMode.telemetry.addData("frontLeftPower | w/Limiter","%4.2f, %4.2f", (frontLeftPower / scaleFactor), (frontLeftPower / scaleFactor * speedLimiter));
-        myOpMode.telemetry.addData("backLeftPower | w/Limiter","%4.2f, %4.2f", (backLeftPower / scaleFactor), (backLeftPower / scaleFactor * speedLimiter));
-        myOpMode.telemetry.addData("frontRightPower | w/Limiter","%4.2f, %4.2f", (frontRightPower / scaleFactor), (frontRightPower / scaleFactor * speedLimiter));
-        myOpMode.telemetry.addData("backRightPower | w/Limiter","%4.2f, %4.2f", (backRightPower / scaleFactor), (backRightPower / scaleFactor * speedLimiter));
-        myOpMode.telemetry.update();
-        */
-
     }
 
     private static double squarePower(double power) {

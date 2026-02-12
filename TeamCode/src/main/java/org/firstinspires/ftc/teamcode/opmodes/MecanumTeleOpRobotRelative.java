@@ -94,11 +94,11 @@ public class MecanumTeleOpRobotRelative extends LinearOpMode {
         frontRightDrive.setPower(squarePower(frontRightPower));
         backRightDrive.setPower(squarePower(backRightPower));
 
-        telemetry.addData("maxPower", scaleFactor);
-        telemetry.addData("frontLeftPower | w/Limiter","%4.2f, %4.2f", (frontLeftPower / scaleFactor), (frontLeftPower / scaleFactor * speedLimiter));
-        telemetry.addData("backLeftPower | w/Limiter","%4.2f, %4.2f", (backLeftPower / scaleFactor), (backLeftPower / scaleFactor * speedLimiter));
-        telemetry.addData("frontRightPower | w/Limiter","%4.2f, %4.2f", (frontRightPower / scaleFactor), (frontRightPower / scaleFactor * speedLimiter));
-        telemetry.addData("backRightPower | w/Limiter","%4.2f, %4.2f", (backRightPower / scaleFactor), (backRightPower / scaleFactor * speedLimiter));
+        telemetry.addData("\nmaxPower", scaleFactor);
+        telemetry.addData("frontLeftPower","%4.2f", (frontLeftPower / scaleFactor));
+        telemetry.addData("backLeftPower","%4.2f", (backLeftPower / scaleFactor));
+        telemetry.addData("frontRightPower","%4.2ff", (frontRightPower / scaleFactor));
+        telemetry.addData("backRightPower","%4.2f", (backRightPower / scaleFactor));
         telemetry.update();
     }
 
