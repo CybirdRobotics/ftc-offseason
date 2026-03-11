@@ -84,9 +84,9 @@ public class LimelightSampleCode extends LinearOpMode {
                 double tx = result.getTx(); // how far left or right the target is (degrees)
                 double ty = result.getTy(); // how far up or down the target is (degrees)
                 double ta = result.getTa(); // how big the target looks (0%-100% of the image)
-                telemetry.addData("Tx", tx);
-                telemetry.addData("Ty", ty);
-                telemetry.addData("Ta", ta);
+                telemetry.addData("Tx (degrees)", tx);
+                telemetry.addData("Ty (degrees)", ty);
+                telemetry.addData("Ta (% area)", ta);
 
                 Pose3D botpose_mt1 = result.getBotpose();   // MegaTag 1
                 if (botpose_mt1 != null) {

@@ -1,17 +1,22 @@
+/*
+ Coach Pratt YouTube: How to Auto-Rotate to an AprilTag with Mecanum Drive
+ https://youtu.be/dATlviyccY0?si=EV8WX1p3TgWEtaDU
+ */
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.mechanisms.AprilTagWebcam;
+import org.firstinspires.ftc.teamcode.mechanisms.WebcamAprilTag;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@TeleOp
-public class AprilTagAutoAlignment extends OpMode {
+@TeleOp(name="April Tag Alignment (Webcam)", group = "OpMode")
+//@Disabled   // comment this out to add to the OpMode list on the Driver Hub
+public class AprilTagAutoAlignmentWebcam extends OpMode {
 
-    private final AprilTagWebcam aprilTagWebcam = new AprilTagWebcam();
+    private final WebcamAprilTag webcamAprilTag = new WebcamAprilTag();
 
     // Target AprilTag ID
     private static final int TARGET_APRILTAG_ID = 20;   // change to the ID of your desired AprilTag
@@ -37,7 +42,7 @@ public class AprilTagAutoAlignment extends OpMode {
 
     @Override
     public void init() {
-        aprilTagWebcam.init(hardwareMap, telemetry);
+        webcamAprilTag.init(hardwareMap, telemetry);
         drive.init(hardwareMap);
 
         // Send telemetry message to signify robot is ready.
@@ -63,10 +68,10 @@ public class AprilTagAutoAlignment extends OpMode {
         double turn = gamepad1.right_stick_x;
 
         // --------- Get AprilTag Info ---------
-        // Update the vision portal
-        aprilTagWebcam.update();
+        // Update the vision portal to read AprilTag(s)
+        webcamAprilTag.update();
 
-        AprilTagDetection targetAprilTagID = aprilTagWebcam.getTagBySpecificID(TARGET_APRILTAG_ID);  // target AprilTag 20
+        AprilTagDetection targetAprilTagID = webcamAprilTag.getAprilTagByID(TARGET_APRILTAG_ID);  // target AprilTag 20
         telemetry.addData("AprilTag ID" + TARGET_APRILTAG_ID, targetAprilTagID.toString());
 
         // --------- Auto Align Logic ---------
@@ -77,13 +82,14 @@ public class AprilTagAutoAlignment extends OpMode {
                 if (Math.abs(error) < angleTolerance) {
                     turn = 0;
                 } else {
-                    double pTerm = error * Kp;
+
+                    double p = error * Kp;
 
                     currentTime = getRuntime();
                     double dT = currentTime - lastTime;
-                    double dTerm = ((error = lastError) / dT) * Kd);
+                    double d = ((error = lastError) / dT) * Kd;
 
-                    turn = Range.clip(pTerm * dTerm, -0.4, 0.4);
+                    turn = Range.clip(p * d, -0.4, 0.4);
 
                     lastError = error;
                     lastTime = currentTime;
@@ -127,7 +133,7 @@ public class AprilTagAutoAlignment extends OpMode {
             if (gamepad1.left_trigger > 0.3) {
                 telemetry.addLine("AUTO Align Mode");
             }
-            aprilTagWebcam.telemetryAprilTag(targetAprilTagID);
+            webcamAprilTag.telemetryAprilTag(targetAprilTagID);
             telemetry.addData("Error", error);
         } else {
             telemetry.addLine("MANUAL Mode");
