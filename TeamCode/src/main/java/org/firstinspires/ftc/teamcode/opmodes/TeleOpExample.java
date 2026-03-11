@@ -5,13 +5,14 @@
 
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 
 @TeleOp(name="TeleOp (OpMode) Example", group = "OpMode")
-//@Disabled // comment this out to add to the OpMode list on the Driver Hub
+@Disabled // comment this out to add to the OpMode list on the Driver Hub
 public class TeleOpExample extends OpMode {
 
     // Create a MecanumDrive object to be used to access robot drive functionality.

@@ -1,5 +1,5 @@
 /*
-    From FTC Team 7477 - FTC Programming Episode 8: Mechanum Drive (robot centric)
+    From FTC Team 7477 - FTC Programming Episode 8: Mecanum Drive (robot centric)
                          FTC Programming Episode 9: Scaling Drive Powers Proportionally
 
     and https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html#robot-centric-final-sample-code
@@ -8,7 +8,6 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -18,21 +17,18 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
-import org.firstinspires.ftc.teamcode.mechanisms.Sensors;
 
-@TeleOp(name="Mecanum Drive (Field Relative)", group = "OpMode")
-//@Disabled   // comment this out to add to the OpMode list on the Driver Hub
-public class MecanumTeleOpFieldRelative extends LinearOpMode {
+@TeleOp(name="Mecanum TeleOp (w Limelight)", group = "OpMode")
+@Disabled   // comment this out to add to the OpMode list on the Driver Hub
+public class MecanumTeleOp extends LinearOpMode {
 
     private Limelight3A limelight;
 
     MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object (class)
-    Sensors sensors = new Sensors();    // create instance of Sensors object for IMU
 
     @Override
     public void runOpMode() throws InterruptedException {
         drive.init(hardwareMap);
-        sensors.init(hardwareMap);
 
         try {
             limelight = hardwareMap.get(Limelight3A.class, "Limelight 3A");
@@ -63,17 +59,18 @@ public class MecanumTeleOpFieldRelative extends LinearOpMode {
             double distance = 0;
             double targetDistance = 24; // desired distance to target in inches
 
-            telemetry.addLine("Press A to reset Yaw.");
-            telemetry.addLine("Hold LEFT bumper to drive in robot relative mode.");
-            telemetry.addLine("Hold RIGHT bumper for auto scoring alignment.");
+            telemetry.addLine("Defaults to FIELD relative mode.");
+            telemetry.addLine("Hold LEFT bumper to drive in ROBOT relative mode.");
+            telemetry.addLine("Hold RIGHT bumper for AUTO SCORING alignment.");
+            telemetry.addLine("Press A to reset YAW.");
 
             // When gamepad1.a is pressed, reset the Yaw to 0 based on the orientation relative to the robot's position
             if (gamepad1.a) {
-                sensors.resetYaw();
+                drive.resetYaw();
             }
 
             // Limelight MegaTag2 requires input (yaw) from the IMU for localization.
-            YawPitchRollAngles orientation = sensors.getRobotYawPitchRollAngles();
+            YawPitchRollAngles orientation = drive.getRobotYawPitchRollAngles();
             limelight.updateRobotOrientation(orientation.getYaw());
             limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
 
@@ -142,7 +139,7 @@ public class MecanumTeleOpFieldRelative extends LinearOpMode {
         double targetHeight = 29.5; // center of AprilTag on DECODE goal in inches (38.75 - 9.25)
 
         double angleToTargetDegrees = limelightPitchAngle + a2;
-        double angleToTargetRadians = angleToTargetDegrees * (3.14159 / 180.0);
+        double angleToTargetRadians = angleToTargetDegrees * (Math.PI / 180.0);
 
         // calculate distance in inches
         return (targetHeight - limelightHeight) / Math.tan(angleToTargetRadians);
