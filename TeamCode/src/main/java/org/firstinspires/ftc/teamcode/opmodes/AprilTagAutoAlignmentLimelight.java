@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.LimelightAprilTag;
 @Disabled   // comment this out to add to the OpMode list on the Driver Hub
 public class AprilTagAutoAlignmentLimelight extends LinearOpMode {
 
-    // ... define limelight variables ...
+    // Create an instance of the Limelight object to be used to access camera functionality.
     private final LimelightAprilTag limelightAprilTag = new LimelightAprilTag();
     // Target AprilTag ID
     private static final int TARGET_APRILTAG_ID = 20;   // change to the ID of your desired AprilTag
@@ -20,8 +20,8 @@ public class AprilTagAutoAlignmentLimelight extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-       limelightAprilTag.init(hardwareMap, telemetry);
-
+        // Initialize Limelight hardware
+        limelightAprilTag.init(hardwareMap, telemetry);
 
         // Send telemetry message to signify robot is ready.
         // This telemetry line is especially important when using the IMU, as the IMU can take

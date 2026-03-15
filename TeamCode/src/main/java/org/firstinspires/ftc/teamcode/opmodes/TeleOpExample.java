@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 @Disabled // comment this out to add to the OpMode list on the Driver Hub
 public class TeleOpExample extends OpMode {
 
-    // Create a MecanumDrive object to be used to access robot drive functionality.
+    // Create an instance of the MecanumDrive object to be used to access robot drive functionality.
     // Note, prefix any mecanum drive functions with "drive." to access this class.
     MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object (class)
 

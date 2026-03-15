@@ -16,6 +16,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 //@Disabled   // comment this out to add to the OpMode list on the Driver Hub
 public class AprilTagAutoAlignmentWebcam extends OpMode {
 
+    // Create an instance of the Webcam object to be used to access camera functionality.
     private final WebcamAprilTag webcamAprilTag = new WebcamAprilTag();
 
     // Target AprilTag ID

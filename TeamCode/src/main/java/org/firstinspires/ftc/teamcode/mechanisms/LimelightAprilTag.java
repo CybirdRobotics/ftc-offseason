@@ -29,8 +29,7 @@ public class LimelightAprilTag {
         }
 
         limelight.pipelineSwitch(9);    // specifies which pipeline to use
-        limelight.setPollRateHz(100);   // from LL documentation to  set how often we ask Limelight for data (100 times per second)
-        limelight.start();  // start polling Limelight for data.
+        //limelight.setPollRateHz(100);   // from LL documentation to set how often we ask Limelight for data (100 times per second)
     }
 
     public void start() {
@@ -47,20 +46,8 @@ public class LimelightAprilTag {
 
     public LLResult getLLResults() {
         // Get Limelight results (replace with your actual Limelight API calls)
-        LLResult result = limelight.getLatestResult();
 
-        if (result != null && result.isValid()) {
-            // The coordinate system for botPose matches the standard FTC coordinate system. (0,0,0) is the center of the field floor
-            // For non-diamond configurations, 0 degrees Yaw means the blue alliance is on the left side of your robot, and the red alliance is on the right side of your robot.
-            double tx = result.getTx(); // how far left or right the target is (degrees)
-            double ty = result.getTy(); // how far up or down the target is (degrees)
-            double ta = result.getTa(); // how big the target looks (0%-100% of the image)
-            telemetry.addData("Tx", tx);
-            telemetry.addData("Ty", ty);
-            telemetry.addData("Ta", "%0.4f", ta + "\n");
-        }
-
-        return result;
+        return limelight.getLatestResult();
     }
 
     public double getDistance(double a2) {
