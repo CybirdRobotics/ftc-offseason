@@ -22,10 +22,10 @@ public class MecanumDrive {
     private ElapsedTime runtime = new ElapsedTime();
 
     // Declare drive constants (and make public if you want to use by the calling OpMode).
-    // Calculate the COUNTS_PER_INCH for your specific drive train. Go to your motor vendor website to determine your motor's COUNTS_PER_REV.
+    // Calculate the COUNTS_PER_INCH for your specific encoder. Check the vendor website to determine the encoder resolution for you particular motor.
     // For external drive gearing, set DRIVE_GEAR_REDUCTION as needed.
     private static final double COUNTS_PER_REV = 28;  // PPR REV 20:1 (5:1 + 4:1) = 28 * (5.23 * 3.67) = 537.4; goBilda 312RPM Yellow Jacket motor = 537.7
-    private static final double DRIVE_GEAR_REDUCTION = 5.23 * 3.67;  // gear ratio or 1.0 if no external gearing.
+    private static final double DRIVE_GEAR_REDUCTION = 5.23 * 3.67;  // external drive/motor gearing or 1.0 if none.
     private static final double WHEEL_DIAMETER_MM = 75; // REV = 75mm; goBuilda = 104mm
     private static final double COUNTS_PER_MM = (COUNTS_PER_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_MM * Math.PI);
     //private static final double TICKS_PER_IN = TICKS_PER_MM * 25.4;

@@ -10,11 +10,10 @@ import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 @Autonomous
 public class AutoSquareByEncoder extends LinearOpMode {
 
-    // Create an instance of the MecanumDrive object to be used to access robot drive functionality.
-    MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object
+    MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object to access robot drive functionality
     private ElapsedTime runtime = new ElapsedTime();
 
-    static final double TIMEOUT_SECONDS = 8.0;  // movement timeout
+    private static final double TIMEOUT_SECONDS = 8.0;  // movement timeout in seconds
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -30,18 +29,18 @@ public class AutoSquareByEncoder extends LinearOpMode {
 
         // Step 1: drive forward 24 inches
         //encoderDrive(DRIVE_SPEED, 24, 24, 5.0);  // Drive forward 24 inches
-        drive.driveEncoder(0.8, 24, DistanceUnit.INCH);
+        drive.driveEncoder(0.8, 24, DistanceUnit.INCH); // drive forward at 80% speed
         runtime.reset();
         while (opModeIsActive() && runtime.seconds() < TIMEOUT_SECONDS) {
-            telemetry.addData("Path", "Current position %d mm.", drive.getCurrentPosition());
+            telemetry.addData("Path", "Step 1: current position %d ticks.", drive.getCurrentPosition());
             telemetry.update();
         }
 
         // Step 2: turn right 90 degrees
-        drive.driveRobotRelative(0,0,0.4);
+        drive.driveRobotRelative(0,0,0.4);  // turn right at 40% speed
         runtime.reset();
         while (opModeIsActive() && (runtime.seconds() < 1.2)) {
-            telemetry.addData("Path", "Leg 2: %4.1f s elapsed.", runtime.seconds());
+            telemetry.addData("Path", "Step 2: %4.1f s elapsed.", runtime.seconds());
             telemetry.update();
         }
 

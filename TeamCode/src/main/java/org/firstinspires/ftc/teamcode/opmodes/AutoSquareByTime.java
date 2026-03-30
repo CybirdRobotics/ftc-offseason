@@ -9,9 +9,8 @@ import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 @Autonomous
 public class AutoSquareByTime extends LinearOpMode {
 
-    // Create an instance of the MecanumDrive object to be used to access robot drive functionality.
-    MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object
-    private ElapsedTime runtime = new ElapsedTime();
+    MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object to access robot drive functionality
+    private ElapsedTime driveTimer = new ElapsedTime(); // create a timer
 
 
     @Override
@@ -28,27 +27,27 @@ public class AutoSquareByTime extends LinearOpMode {
 
         // Step through each leg of the path, ensuring that the OpMode has not been stopped along the way.
 
-        // Step 1: drive forward for 24"
-        drive.driveRobotRelative(0.6,0,0);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 2.0)) {
-            telemetry.addData("Path", "Leg 1: %4.1f S Elapsed", runtime.seconds());
+        // Step 1: drive forward for 24 inches
+        drive.driveRobotRelative(0.8,0,0);  // drive forward at 80% speed
+        driveTimer.reset();
+        while (opModeIsActive() && (driveTimer.seconds() < 2.0)) {
+            telemetry.addData("Path", "Step 1: %3.1fs elapsed.", driveTimer.seconds());
             telemetry.update();
         }
 
         // Step 2: turn right 90 degrees
-        drive.driveRobotRelative(0,0,0.4);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1.2)) {
-            telemetry.addData("Path", "Leg 2: %4.1f S Elapsed", runtime.seconds());
+        drive.driveRobotRelative(0,0,0.4);  // turn right at 40% speed
+        driveTimer.reset();
+        while (opModeIsActive() && (driveTimer.seconds() < 1.2)) {
+            telemetry.addData("Path", "Step 2: %3.1fs elapsed.", driveTimer.seconds());
             telemetry.update();
         }
 
         // Step n: stop movement
         drive.stopRobot();
 
-        telemetry.addData("Path", "Complete");
+        telemetry.addData("Path", "Complete.");
         telemetry.update();
-        sleep(1000);
+        sleep(1000);    // wait for 1 second
     }
 }
