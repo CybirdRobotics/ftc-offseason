@@ -37,7 +37,7 @@ public class AutoSquareByEncoder extends LinearOpMode {
         }
 
         // Step 2: turn right 90 degrees
-        drive.driveRobotRelative(0,0,0.4);  // turn right at 40% speed
+        drive.driveRobotRelative(0,0,0.6);  // turn right at 40% speed
         runtime.reset();
         while (opModeIsActive() && (runtime.seconds() < 1.2)) {
             telemetry.addData("Path", "Step 2: %4.1f s elapsed.", runtime.seconds());

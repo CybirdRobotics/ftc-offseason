@@ -29,7 +29,7 @@ public class MecanumDrive {
     private static final double WHEEL_DIAMETER_MM = 75; // REV = 75mm; goBuilda = 104mm
     private static final double COUNTS_PER_MM = (COUNTS_PER_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_MM * Math.PI);
     //private static final double TICKS_PER_IN = TICKS_PER_MM * 25.4;
-    public static final double speedLimiter = 0.6;  // speedLimiter reduces movement speed to a specified % of maximum (1.0). Used for outreach events.
+    public static final double speedLimiter = 1.0;  // speedLimiter reduces movement speed to a specified % of maximum (1.0). Used for outreach events.
 
     public void init(HardwareMap hwMap) {
     //public void init(HardwareMap hwMap, boolean isGoBildaPinPointIMU) {

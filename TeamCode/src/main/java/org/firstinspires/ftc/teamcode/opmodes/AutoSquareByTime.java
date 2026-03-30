@@ -36,7 +36,7 @@ public class AutoSquareByTime extends LinearOpMode {
         }
 
         // Step 2: turn right 90 degrees
-        drive.driveRobotRelative(0,0,0.4);  // turn right at 40% speed
+        drive.driveRobotRelative(0,0,0.6);  // turn right at 40% speed
         driveTimer.reset();
         while (opModeIsActive() && (driveTimer.seconds() < 1.2)) {
             telemetry.addData("Path", "Step 2: %3.1fs elapsed.", driveTimer.seconds());
