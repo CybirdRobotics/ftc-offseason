@@ -38,7 +38,7 @@ public class Gyroscope {
     }
 
     public double normalizeYaw(double angle) {
-        if (angle > 180) {    // logic to normalize the target heading to stay within the IMU range [-180, 180]
+        if (angle > 180) {    // logic to normalize the target heading to stay within the IMU sensor range [-180, 180]
             angle -= 360;
         } else if (angle <= -180) {
             angle += 360;

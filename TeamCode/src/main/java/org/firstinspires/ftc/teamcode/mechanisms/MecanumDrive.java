@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class MecanumDrive {
 
@@ -52,11 +51,17 @@ public class MecanumDrive {
 
         // Initialize the IMU using the built-in REV Control Hub IMU
         imu = hwMap.get(IMU.class, "imu");
+
         // TODO: Change the the following to match the controller Hub orientation on your robot
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+    }
+
+    public void resetYaw() {
+        imu.resetYaw();
     }
 
     public void setMotorModes(DcMotor.RunMode mode) {
@@ -65,28 +70,6 @@ public class MecanumDrive {
         frontRightDrive.setMode(mode);
         backLeftDrive.setMode(mode);
         backRightDrive.setMode(mode);
-    }
-
-    public void resetYaw() {
-        imu.resetYaw();
-    }
-
-    public YawPitchRollAngles getRobotYawPitchRollAngles() {
-        return imu.getRobotYawPitchRollAngles();
-    }
-
-    public double getHeading() {
-        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-    }
-
-    public double normalizeHeading(double heading) {
-        if (heading > 180) {    // logic to normalize the target heading to stay within the IMU range [-180, 180]
-            heading -= 360;
-        } else if (heading <= -180) {
-            heading += 360;
-        }
-
-        return heading;
     }
 
     public void driveFieldRelative(double forward, double strafe, double turn) {
