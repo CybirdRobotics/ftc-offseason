@@ -50,6 +50,7 @@ public class MecanumDrive {
         setMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        // Initialize the IMU using the built-in REV Control Hub IMU
         imu = hwMap.get(IMU.class, "imu");
         // TODO: Change the the following to match the controller Hub orientation on your robot
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
@@ -70,12 +71,22 @@ public class MecanumDrive {
         imu.resetYaw();
     }
 
+    public YawPitchRollAngles getRobotYawPitchRollAngles() {
+        return imu.getRobotYawPitchRollAngles();
+    }
+
     public double getHeading() {
         return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
     }
 
-    public YawPitchRollAngles getRobotYawPitchRollAngles() {
-        return imu.getRobotYawPitchRollAngles();
+    public double normalizeHeading(double heading) {
+        if (heading > 180) {    // logic to normalize the target heading to stay within the IMU range [-180, 180]
+            heading -= 360;
+        } else if (heading <= -180) {
+            heading += 360;
+        }
+
+        return heading;
     }
 
     public void driveFieldRelative(double forward, double strafe, double turn) {

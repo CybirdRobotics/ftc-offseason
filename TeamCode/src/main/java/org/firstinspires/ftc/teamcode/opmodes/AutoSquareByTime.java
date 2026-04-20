@@ -26,21 +26,22 @@ public class AutoSquareByTime extends LinearOpMode {
         waitForStart();
 
         // Step through each leg of the path, ensuring that the OpMode has not been stopped along the way.
+        for (int i = 0; i < 4; i++) {
+            // Step 1: drive forward for 48 inches
+            drive.driveRobotRelative(0.8, 0, 0);  // drive forward at 80% speed
+            driveTimer.reset();
+            while (opModeIsActive() && (driveTimer.seconds() < 2.0)) {
+                telemetry.addData("Path", "Step %d: %3.1fs elapsed.", i, driveTimer.seconds());
+                telemetry.update();
+            }
 
-        // Step 1: drive forward for 24 inches
-        drive.driveRobotRelative(0.8,0,0);  // drive forward at 80% speed
-        driveTimer.reset();
-        while (opModeIsActive() && (driveTimer.seconds() < 2.0)) {
-            telemetry.addData("Path", "Step 1: %3.1fs elapsed.", driveTimer.seconds());
-            telemetry.update();
-        }
-
-        // Step 2: turn right 90 degrees
-        drive.driveRobotRelative(0,0,0.6);  // turn right at 40% speed
-        driveTimer.reset();
-        while (opModeIsActive() && (driveTimer.seconds() < 1.2)) {
-            telemetry.addData("Path", "Step 2: %3.1fs elapsed.", driveTimer.seconds());
-            telemetry.update();
+            // Step 2: turn right 90 degrees
+            drive.driveRobotRelative(0, 0, 0.6);  // turn right at 40% speed
+            driveTimer.reset();
+            while (opModeIsActive() && (driveTimer.seconds() < 1.2)) {
+                telemetry.addData("Path", "Step %d: %3.1fs elapsed.", i+1, driveTimer.seconds());
+                telemetry.update();
+            }
         }
 
         // Step n: stop movement
