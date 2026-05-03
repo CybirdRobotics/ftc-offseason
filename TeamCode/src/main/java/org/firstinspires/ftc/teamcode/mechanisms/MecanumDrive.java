@@ -9,31 +9,39 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 public class MecanumDrive {
 
     // Declare motor and IMU objects (and make them private to prevent external access)
     private DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
     private IMU imu;
-
-    //GoBildaPinpointDriver pinpoint;
-
+    private GoBildaPinpointDriver pinpoint;
     private ElapsedTime runtime = new ElapsedTime();
 
     // Declare drive constants (and make public if you want to use by the calling OpMode).
-    // Calculate the COUNTS_PER_INCH for your specific encoder. Check the vendor website to determine the encoder resolution for you particular motor.
-    // For external drive gearing, set DRIVE_GEAR_REDUCTION as needed.
-    private static final double COUNTS_PER_REV = 28;  // PPR REV 20:1 (5:1 + 4:1) = 28 * (5.23 * 3.67) = 537.4; goBilda 312RPM Yellow Jacket motor = 537.7
-    private static final double DRIVE_GEAR_REDUCTION = 5.23 * 3.67;  // external drive/motor gearing or 1.0 if none.
+    // TODO: Calculate the TICKS_PER_INCH for your specific encoder. Check the vendor website to determine the encoder resolution for you particular motor.
+    private static final double TICKS_PER_REV = 28;  // PPR REV 20:1 (5:1 + 4:1) = 28 * (5.23 * 3.67) = 537.4; goBilda 312RPM Yellow Jacket motor = 537.7 PPR
+    private static final double GEAR_RATIO = 5.23 * 3.67;  // external drive/motor gearing or 1.0 if none.
     private static final double WHEEL_DIAMETER_MM = 75; // REV = 75mm; goBuilda = 104mm
-    private static final double COUNTS_PER_MM = (COUNTS_PER_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_MM * Math.PI);
+    private static final double TICKS_PER_MM = (TICKS_PER_REV * GEAR_RATIO) / (WHEEL_DIAMETER_MM * Math.PI);
     //private static final double TICKS_PER_IN = TICKS_PER_MM * 25.4;
     public static final double speedLimiter = 1.0;  // speedLimiter reduces movement speed to a specified % of maximum (1.0). Used for outreach events.
 
-    public void init(HardwareMap hwMap) {
-    //public void init(HardwareMap hwMap, boolean isGoBildaPinPointIMU) {
+    //public void init(HardwareMap hwMap) {
+    public void init(HardwareMap hwMap, boolean isPinPointIMU) {
 
-        // Initialize the hardware variables. Note that the strings specified here as parameters must match the names assigned in the robot controller configuration.
+        // Get a reference to and initialize the IMU using the built-in REV Control Hub IMU.
+        imu = hwMap.get(IMU.class, "imu");
+
+        // TODO: Change the the following to match the controller Hub orientation on your robot
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
+
+        // Get references to and initialize the motors. Note that the strings specified here as parameters must match the names assigned in the robot controller configuration.
         frontLeftDrive = hwMap.get(DcMotor.class, "front_left_drive");
         backLeftDrive = hwMap.get(DcMotor.class, "back_left_drive");
         frontRightDrive = hwMap.get(DcMotor.class, "front_right_drive");
@@ -49,19 +57,11 @@ public class MecanumDrive {
         setMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // Initialize the IMU using the built-in REV Control Hub IMU
-        imu = hwMap.get(IMU.class, "imu");
-
-        // TODO: Change the the following to match the controller Hub orientation on your robot
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
-    }
-
-    public void resetYaw() {
-        imu.resetYaw();
+        if (isPinPointIMU) {
+            // Get a reference to and setup the goBilda Pinpoint sensor
+            pinpoint = hwMap.get(GoBildaPinpointDriver.class, "pinpoint");
+            configurePinpoint();    // configure the goBilda Pinpoint sensor
+        }
     }
 
     public void setMotorModes(DcMotor.RunMode mode) {
@@ -70,6 +70,63 @@ public class MecanumDrive {
         frontRightDrive.setMode(mode);
         backLeftDrive.setMode(mode);
         backRightDrive.setMode(mode);
+    }
+
+    public void configurePinpoint() {
+        /*
+         *  Set the odometry pod positions relative to the point that you want the position to be measured from.
+         *
+         *  The X pod offset refers to how far sideways from the tracking point the X (forward) odometry pod is.
+         *  Left of the center is a positive number, right of center is a negative number.
+         *
+         *  The Y pod offset refers to how far forwards from the tracking point the Y (strafe) odometry pod is.
+         *  Forward of center is a positive number, backwards is a negative number.
+         */
+        pinpoint.setOffsets(-3.875, 0, DistanceUnit.INCH); // refer to goBilda 3110-0002-0001 Product Insight #1
+
+        /*
+         * Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
+         * the goBILDA_SWINGARM_POD, or the goBILDA_4_BAR_POD.
+         * If you're using another kind of odometry pod, uncomment setEncoderResolution and input the
+         * number of ticks per unit of your odometry pod.  For example:
+         *     pinpoint.setEncoderResolution(13.26291192, DistanceUnit.MM);
+         */
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+
+        /*
+         * Set the direction that each of the two odometry pods count. The X (forward) pod should
+         * increase when you move the robot forward. And the Y (strafe) pod should increase when
+         * you move the robot to the left.
+         */
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
+                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+
+        /*
+         * Before running the robot, recalibrate the IMU. This needs to happen when the robot is stationary
+         * The IMU will automatically calibrate when first powered on, but recalibrating before running
+         * the robot is a good idea to ensure that the calibration is "good".
+         * resetPosAndIMU will reset the position to 0,0,0 and also recalibrate the IMU.
+         * This is recommended before you run your autonomous, as a bad initial calibration can cause
+         * an incorrect starting value for x, y, and heading.
+         */
+        pinpoint.resetPosAndIMU();
+    }
+
+    public void setPinpointPosition(DistanceUnit distanceUnit, double x, double y, AngleUnit angleUnit, double heading) {
+        // set the initial location of the robot - this should be the place you are starting the robot from
+        pinpoint.setPosition(new Pose2D(distanceUnit, x, y, angleUnit, heading));
+    }
+
+    public void resetYaw() {
+        imu.resetYaw();
+    }
+
+    public double getHeading() {
+        return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+    }
+
+    public int getCurrentPosition() {
+        return frontLeftDrive.getCurrentPosition();
     }
 
     public void driveFieldRelative(double forward, double strafe, double turn) {
@@ -118,29 +175,23 @@ public class MecanumDrive {
         return power * Math.abs(power);  // square magnitude of input while maintaining the sign
     }
 
-    public int getCurrentPosition() {
-        return frontLeftDrive.getCurrentPosition();
-    }
-
-    public void driveEncoder(double speed, double distance, DistanceUnit distanceUnit) {
+    public void encoderDrive(double speed, double distance, DistanceUnit distanceUnit) {
     /*
-     This function uses the FTC SDK DistanceUnits class, which allows us to accept different input
-     units depending on the user's preference.
+     This function uses the FTC SDK DistanceUnits class, which accepts different input units depending on the user's preference.
 
-     To use, put a double and a DistanceUnit as parameters in a function and then
-     call distanceUnit.toMm(distance). This will return the number of millimeters that are equivalent
-     to whatever distance in the unit specified. We are working in millimeters for this, so that's the
-     unit we request from distanceUnit. But if we want to use inches in our function, we could
+     To use, put a double and a DistanceUnit as parameters in a function and then call distanceUnit.toMm(distance). This will
+     return the number of millimeters that are equivalent to whatever distance in the unit specified. We are working in millimeters
+     for this, so that's the unit we request from distanceUnit. But if we want to use inches in our function, we could
      use distanceUnit.toInches(distance) instead.
     */
-        // Determine new target position, and pass to motor controller
-        int targetPosition = (int)(distanceUnit.toMm(distance) * COUNTS_PER_MM);
+        // Determine new target position. This method assumes that each movement is relative to the robots last position.
+        int targetPosition = (int)(distanceUnit.toMm(distance) * TICKS_PER_MM);
         int frontLeftTarget = frontLeftDrive.getCurrentPosition() + targetPosition;
         int backLeftTarget = backLeftDrive.getCurrentPosition() + targetPosition;
         int frontRightTarget = frontRightDrive.getCurrentPosition() + targetPosition;
         int backRightTarget = backRightDrive.getCurrentPosition() + targetPosition;
 
-        // Set target then set RUN_TO_POSITION
+        // Set target in motor controller then set RUN_TO_POSITION
         frontLeftDrive.setTargetPosition(frontLeftTarget);
         backLeftDrive.setTargetPosition(backLeftTarget);
         frontRightDrive.setTargetPosition(frontRightTarget);
@@ -148,6 +199,11 @@ public class MecanumDrive {
         setMotorModes(DcMotor.RunMode.RUN_TO_POSITION);
 
         driveRobotRelative(Math.abs(speed), 0, 0);  // speed must be positive for RUN_TO_POSITION to work correctly
+    }
+
+    public boolean isBusy() {
+    // Method to check for active drive motor(s).  Returns a boolean.
+        return (frontLeftDrive.isBusy() && backLeftDrive.isBusy() && frontRightDrive.isBusy() && backRightDrive.isBusy());
     }
 
     public void stopRobot() {

@@ -66,8 +66,8 @@ public class MecanumTeleOp extends LinearOpMode {
 /*
             // Limelight MegaTag2 requires input (yaw) from the IMU for localization.
             YawPitchRollAngles orientation = drive.getRobotYawPitchRollAngles();
-            limelight.updateRobotOrientation(orientation.getYaw());
-            limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
+            limelight.updateRobotOrientation(orientation.getHeading());
+            limelight.updateRobotOrientation(orientation.getHeading(AngleUnit.DEGREES));
 */
             // Get the current Limelight pipeline results
             LLResult result = limelight.getLLResults();
