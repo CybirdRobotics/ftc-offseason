@@ -14,7 +14,7 @@ public class AutoSquareByEncoder extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive.init(hardwareMap);    // hardwaremap
+        drive.init(hardwareMap, true);    // hardware map
 
         // Set the initial starting point (location) of the robot
         drive.setPinpointPosition(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0);
