@@ -17,13 +17,13 @@ public class TeleOpLinearExample extends LinearOpMode {
 
     // Create an instance of the MecanumDrive object to be used to access robot drive functionality.
     // Note, prefix any mecanum drive functions with "drive." to access this class.
-    MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object (class)
+    MecanumDrive drive = new MecanumDrive(telemetry);    // create instance of MecanumDrive object (class)
 
     @Override
     public void runOpMode() {
 
         // Initialize the drive motors and IMU, using the mecanum drive class
-        drive.init(hardwareMap);
+        drive.init(hardwareMap, false);
 
         // Send telemetry message to signify robot is ready and wait for driver to press START.
         // This telemetry line is especially important when using the IMU, as the IMU can take
@@ -48,7 +48,7 @@ public class TeleOpLinearExample extends LinearOpMode {
                 drive.driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
             }
 
-            telemetry.addData("\nSpeed Limiter", drive.speedLimiter);
+            telemetry.addData("\nSpeed Limiter", drive.SPEED_LIMITER);
             telemetry.update();
         }
     }

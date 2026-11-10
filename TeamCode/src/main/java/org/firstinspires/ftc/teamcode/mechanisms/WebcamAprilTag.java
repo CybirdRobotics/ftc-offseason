@@ -4,7 +4,6 @@
 */
 package org.firstinspires.ftc.teamcode.mechanisms;
 
-import android.annotation.SuppressLint;
 import android.util.Size;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;

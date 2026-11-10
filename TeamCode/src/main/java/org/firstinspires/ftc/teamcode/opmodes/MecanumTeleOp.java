@@ -22,11 +22,11 @@ public class MecanumTeleOp extends LinearOpMode {
     LimelightAprilTag limelight = new LimelightAprilTag(); // create instance of LimeLight object
 
     // Create an instance of the MecanumDrive object to be used to access robot drive functionality.
-    MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object
+    MecanumDrive drive = new MecanumDrive(telemetry);    // create instance of MecanumDrive object
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive.init(hardwareMap);
+        drive.init(hardwareMap, false);
 
         try {
             limelight.init(hardwareMap, telemetry);

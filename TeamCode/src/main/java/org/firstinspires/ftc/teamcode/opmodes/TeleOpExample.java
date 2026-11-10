@@ -17,13 +17,13 @@ public class TeleOpExample extends OpMode {
 
     // Create an instance of the MecanumDrive object to be used to access robot drive functionality.
     // Note, prefix any mecanum drive functions with "drive." to access this class.
-    MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object (class)
+    MecanumDrive drive = new MecanumDrive(telemetry);    // create instance of MecanumDrive object (class)
 
     @Override
     public void init() {
 
         // Initialize the drive motors and IMU, using the mecanum drive class
-        drive.init(hardwareMap);
+        drive.init(hardwareMap, false);
 
         // Send telemetry message to signify robot is ready.
         // This telemetry line is especially important when using the IMU, as the IMU can take

@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 @Autonomous
 public class AutoSquareByEncoder extends LinearOpMode {
 
-    MecanumDrive drive = new MecanumDrive();    // create MecanumDrive object to access robot drive functionality
+    MecanumDrive drive = new MecanumDrive(telemetry);    // create MecanumDrive object to access robot drive functionality
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -49,11 +49,11 @@ public class AutoSquareByEncoder extends LinearOpMode {
             // Turn right 90 degrees
             k++;    // increment step counter
             drive.driveRobotRelative(0, 0, 0.5);  // start turning right at 50% speed
-            while (opModeIsActive() && (Math.abs(targetHeading - drive.getHeading()) > 3.0)) { // loop until within error tolerance (i.e., 2 degrees)
+            while (opModeIsActive() && (Math.abs(targetHeading - drive.getHeading(AngleUnit.DEGREES)) > 3.0)) { // loop until within error tolerance (i.e., 2 degrees)
                 telemetry.addData("Path", "Step %d", k);
                 telemetry.addData("Target Heading (Normalized)", targetHeading);
-                telemetry.addData("Current Heading", drive.getHeading());
-                telemetry.addData("Error", (targetHeading - drive.getHeading()));
+                telemetry.addData("Current Heading", drive.getHeading(AngleUnit.DEGREES));
+                telemetry.addData("Error", (targetHeading - drive.getHeading(AngleUnit.DEGREES)));
                 telemetry.update();
             }
         }

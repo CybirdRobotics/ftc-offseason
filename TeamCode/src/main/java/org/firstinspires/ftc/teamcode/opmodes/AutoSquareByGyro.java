@@ -4,18 +4,19 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 
 @Autonomous
 public class AutoSquareByGyro extends LinearOpMode {
 
-    MecanumDrive drive = new MecanumDrive();    // create MecanumDrive object to access robot drive functionality
+    MecanumDrive drive = new MecanumDrive(telemetry);    // create MecanumDrive object to access robot drive functionality
     private ElapsedTime driveTimer = new ElapsedTime(); // create timer object
 
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive.init(hardwareMap);
+        drive.init(hardwareMap, false);
 
         // Send telemetry message to signify robot is ready.
         // This telemetry line is especially important when using the IMU, as the IMU can take
@@ -42,11 +43,11 @@ public class AutoSquareByGyro extends LinearOpMode {
             // Step 2: turn right 90 degrees
             k++;
             drive.driveRobotRelative(0, 0, 0.5);  // start turning right at 50% speed
-            while (opModeIsActive() && (Math.abs(targetHeading - drive.getHeading()) > 4.0)) { // loop until within error tolerance (i.e., 2 degrees)
+            while (opModeIsActive() && (Math.abs(targetHeading - drive.getHeading(AngleUnit.DEGREES)) > 4.0)) { // loop until within error tolerance (i.e., 2 degrees)
                 telemetry.addData("Path", "Step %d", k);
                 telemetry.addData("Target Heading (Normalized)", targetHeading);
-                telemetry.addData("Current Heading", drive.getHeading());
-                telemetry.addData("Error", (targetHeading - drive.getHeading()));
+                telemetry.addData("Current Heading", drive.getHeading(AngleUnit.DEGREES));
+                telemetry.addData("Error", (targetHeading - drive.getHeading(AngleUnit.DEGREES)));
                 telemetry.update();
             }
             drive.stopRobot();

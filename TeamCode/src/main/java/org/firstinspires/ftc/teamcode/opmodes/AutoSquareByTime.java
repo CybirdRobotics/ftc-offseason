@@ -9,13 +9,13 @@ import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 @Autonomous
 public class AutoSquareByTime extends LinearOpMode {
 
-    MecanumDrive drive = new MecanumDrive();    // create instance of MecanumDrive object to access robot drive functionality
+    MecanumDrive drive = new MecanumDrive(telemetry);    // create instance of MecanumDrive object to access robot drive functionality
     private ElapsedTime driveTimer = new ElapsedTime(); // create a timer
 
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive.init(hardwareMap);
+        drive.init(hardwareMap, false);
 
         // Send telemetry message to signify robot is ready.
         // This telemetry line is especially important when using the IMU, as the IMU can take
