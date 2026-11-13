@@ -15,7 +15,7 @@ public class AutoSquareByTime extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive.init(hardwareMap, false);
+        drive.init(hardwareMap);
 
         // Send telemetry message to signify robot is ready.
         // This telemetry line is especially important when using the IMU, as the IMU can take

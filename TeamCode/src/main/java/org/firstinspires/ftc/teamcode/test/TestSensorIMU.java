@@ -20,6 +20,14 @@ public class TestSensorIMU extends OpMode {
 
     @Override
     public void loop() {
+
+        telemetry.addLine("Press A (X) to reset YAW.\n");
+
+        // When gamepad1.a is pressed, reset the Yaw to 0 based on the orientation relative to the robot's position
+        if (gamepad1.a) {
+            sensors.resetHeading();
+        }
+
         telemetry.addData("Heading (degrees)", sensors.getHeading(AngleUnit.DEGREES));
         telemetry.addData("Heading (radians)", sensors.getHeading(AngleUnit.RADIANS));
     }

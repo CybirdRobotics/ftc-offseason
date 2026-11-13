@@ -66,17 +66,17 @@ public class TestDriveMotors extends OpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeftDrive  = hardwareMap.get(DcMotor.class, "front_left_drive");
-        backLeftDrive  = hardwareMap.get(DcMotor.class, "back_left_drive");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        frontLeftDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
+        backLeftDrive  = hardwareMap.get(DcMotor.class, "left_rear_drive");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
+        backRightDrive = hardwareMap.get(DcMotor.class, "right_rear_drive");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips.
         // TODO: Make sure all motors are facing the correct direction.
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        //frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        //backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Reset the motor encoder so that it reads zero ticks
         frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

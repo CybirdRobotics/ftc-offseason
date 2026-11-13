@@ -7,7 +7,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -26,7 +25,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive.init(hardwareMap, false);
+        drive.init(hardwareMap);
 
         try {
             limelight.init(hardwareMap, telemetry);
@@ -61,7 +60,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
             // When gamepad1.a is pressed, reset the Yaw to 0 based on the orientation relative to the robot's position
             if (gamepad1.a) {
-                drive.resetYaw();
+                drive.resetHeading();
             }
 /*
             // Limelight MegaTag2 requires input (yaw) from the IMU for localization.

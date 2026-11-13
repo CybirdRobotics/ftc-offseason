@@ -14,7 +14,7 @@ public class AutoSquareByEncoder extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive.init(hardwareMap, true);    // hardware map
+        drive.init(hardwareMap);    // hardware map
 
         // Set the initial starting point (location) of the robot
         drive.setPinpointPosition(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0);
@@ -32,28 +32,27 @@ public class AutoSquareByEncoder extends LinearOpMode {
 
         int k = 0;  // initialize the step counter
         for (double targetHeading : targets) {
-            // Drive forward for 48 inches
+            // Drive forward 48 inches
             k++;    // increment step counter
-            drive.encoderDrive(0.6, 36, DistanceUnit.INCH); // drive forward 36 inches at 70% speed
-            while (opModeIsActive() && drive.isBusy()) {
+
+            drive.driveByEncoder(24, DistanceUnit.INCH, 0.7); // drive forward 70% speed
+            while (opModeIsActive() && drive.isMotorBusy()) {
                 telemetry.addData("Path", "Step %d: current position %d ticks.", k, drive.getCurrentPosition());
                 telemetry.update();
             }
-/*
-            drive.encoderDrive(0.6, -36, DistanceUnit.INCH); // drive backward (use negative distance, not speed).
-            while (opModeIsActive() && drive.isBusy()) {
+
+            drive.driveByEncoder(-24, DistanceUnit.INCH, 0.6); // to drive backward, use negative distance, not speed.
+            while (opModeIsActive() && drive.isMotorBusy()) {
                 telemetry.addData("Path", "Step %d: current position %d ticks.", k, drive.getCurrentPosition());
                 telemetry.update();
             }
-*/
+
             // Turn right 90 degrees
-            k++;    // increment step counter
-            drive.driveRobotRelative(0, 0, 0.5);  // start turning right at 50% speed
-            while (opModeIsActive() && (Math.abs(targetHeading - drive.getHeading(AngleUnit.DEGREES)) > 3.0)) { // loop until within error tolerance (i.e., 2 degrees)
+            //drive.driveRobotRelative(0, 0, 0.5);  // start turning right at 50% speed
+            //while (opModeIsActive() && (Math.abs(targetHeading - drive.getHeading(AngleUnit.DEGREES)) > 2.0)) { // loop until within error tolerance (i.e., 2 degrees)
+            drive.turnToHeading(targets[k-1], 0.4);
+            while (opModeIsActive() && drive.isMotorBusy()) {
                 telemetry.addData("Path", "Step %d", k);
-                telemetry.addData("Target Heading (Normalized)", targetHeading);
-                telemetry.addData("Current Heading", drive.getHeading(AngleUnit.DEGREES));
-                telemetry.addData("Error", (targetHeading - drive.getHeading(AngleUnit.DEGREES)));
                 telemetry.update();
             }
         }

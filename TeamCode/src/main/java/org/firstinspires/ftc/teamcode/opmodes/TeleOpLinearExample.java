@@ -23,7 +23,7 @@ public class TeleOpLinearExample extends LinearOpMode {
     public void runOpMode() {
 
         // Initialize the drive motors and IMU, using the mecanum drive class
-        drive.init(hardwareMap, false);
+        drive.init(hardwareMap);
 
         // Send telemetry message to signify robot is ready and wait for driver to press START.
         // This telemetry line is especially important when using the IMU, as the IMU can take
@@ -34,22 +34,25 @@ public class TeleOpLinearExample extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            telemetry.addLine("Press A to reset Yaw.");
-            telemetry.addLine("Hold LEFT bumper to drive in robot relative mode.");
+            telemetry.addLine("Default is FIELD RELATIVE mode.");
+            telemetry.addLine("Hold LEFT bumper to drive in ROBOT RELATIVE mode.\n");
+            telemetry.addLine("Press A to reset YAW.");
 
             // When gamepad1.a is pressed, reset the YAW to 0 based on the orientation relative to the robot's position
             if (gamepad1.a) {
-                drive.resetYaw();
+                drive.resetHeading();
             }
 
             if (gamepad1.left_bumper) {  // press the left bumper for robot centric drive
-                drive.driveRobotRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+                drive.driveRobotRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x * 1.1, gamepad1.right_stick_x);
             } else {    // field centric drive
-                drive.driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+                drive.driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x * 1.1, gamepad1.right_stick_x);
             }
 
             telemetry.addData("\nSpeed Limiter", drive.SPEED_LIMITER);
             telemetry.update();
         }
+
+        if (isStopRequested()) {}   // run this when STOP is pressed on the driver hub
     }
 }

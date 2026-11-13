@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
+
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,6 +15,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.config.PIDConstants;
+
 public class MecanumDrive {
 
     // Declare motor and IMU objects (and make them private to prevent external access)
@@ -24,42 +29,57 @@ public class MecanumDrive {
 
     // Declare drive constants (and make public if you want to use by the calling OpMode).
     // TODO: Calculate the TICKS_PER_INCH for your specific encoder. Check the vendor website to determine the encoder resolution for you particular motor.
-    private static final double TICKS_PER_REV = 28;  // PPR REV 20:1 (5:1 + 4:1) = 28 * (5.23 * 3.67) = 537.4
-    private static final double MOTOR_GEAR_RATIO = 5.23 * 3.67;  // REV motor gearing cartridges
-    private static final double ENCODER_RESOLUTION = TICKS_PER_REV * MOTOR_GEAR_RATIO;    // REV 20:1 (5:1 + 4:1) = 28 * (5.23 * 3.67) = 537.4; goBilda 312RPM Yellow Jacket motor = 537.7 PPR
-    private static final double DRIVE_GEAR_RATIO = 1.0; // external drive gear ratio or 1.0 if none
-    private static final double WHEEL_DIAMETER_MM = 75; // REV = 75mm; goBuilda = 104mm
-    private static final double TICKS_PER_MM = (ENCODER_RESOLUTION * DRIVE_GEAR_RATIO) / (WHEEL_DIAMETER_MM * Math.PI);
+    // REV mecanum chassis specs
+    // REV 20:1 (5:1 + 4:1) = 28 * (5.23 * 3.67) = 537.4 PPR
+    private static final double TICKS_PER_REV = 28;
+    private static final double GEAR_RATIO = 5.23 * 3.67;   // REV motor gearing cartridges
+    private static final double WHEEL_DIAMETER_MM = 75;     // REV = 75mm
 
-    // These constants define the desired driving/control characteristics.
-    // They can/should be tweaked to for the specific robot drivetrain.
-    public static final double SPEED_LIMITER = 0.8; // speedLimiter reduces movement speed to a specified % of maximum (1.0). Used for outreach events.
-    static final double HEADING_THRESHOLD = 2.0 ;   // How close must the heading get to the target before moving to next step.
-                                                    // Requiring more accuracy (a smaller number) will often make the turn take longer to get into the final position.
+    // goBilda mecanum chassis specs
+    // goBilda 312RPM Yellow Jacket motor = ((((1+(46/17))) * (1+(46/11))) * 28) = 537.7 PPR
+/*
+    private static final double TICKS_PER_REV = 28;
+    private static final double GEAR_RATIO = (1+(double)(46/17)) * (1+(double)(46/11));   // goBilda 312RPM Yellow Jacket internal motor gearing = 19.2
+    private static final double WHEEL_DIAMETER_MM = 104;    // goBilda = 104mm
+*/
+    private static final double ENCODER_RESOLUTION = TICKS_PER_REV * GEAR_RATIO;
+    private static final double DRIVE_GEAR_RATIO = 1.0;     // external drive gear ratio or 1.0 if none
+    private static final double TICKS_PER_MM = (ENCODER_RESOLUTION * DRIVE_GEAR_RATIO) / (WHEEL_DIAMETER_MM * Math.PI);
+    //private static final double TICKS_PER_IN = TICKS_PER_MM * 25.4;
+
+    // These constants define the desired driving/control characteristics
+    public static final double SPEED_LIMITER = 1.0; // speedLimiter reduces movement speed to a specified % of maximum (1.0). Used for outreach events.
 
     // Define the Proportional control coefficient (or GAIN) for "heading control".
-    // Increase these numbers if the heading does not correct strongly enough (eg: a heavy robot or using tracks)
-    // Decrease these numbers if the heading does not settle on the correct value (eg: very agile robot with omnidirectional wheels).
-    static final double kpTurn = 0.02;     // Larger is more responsive, but also less stable.
+    // Increase the gain if the heading does not correct strongly enough.
+    // Decrease the gain if the heading oscillates and does not settle on the correct value.
+    double Kp = PIDConstants.Kp;     // a larger value is more responsive, but also less stable
+    double MIN_TURN_POWER = PIDConstants.MIN_TURN_POWER;
+    double HEADING_TOLERANCE = PIDConstants.HEADING_TOLERANCE;  // how close must the heading get to the target before moving to next step.
+                                                                // requiring more accuracy (a smaller number) will often make the turn take longer
+                                                                // to get into the final position.
 
-    // Define a constructor that accepts the calling OpMode's telemetry instance
+    // Define a constructor to use the calling OpMode's telemetry.
     public MecanumDrive(Telemetry telemetry) {
         this.telemetry = telemetry;
     }
 
-    public void init(HardwareMap hwMap, boolean isPinPointIMU) {
+    public void init(HardwareMap hwMap) {
+        // If goBilda Pinpoint IMU is installed on the robot, set to TRUE.
+        boolean isPinPointIMU = true;
 
         // Get a reference to and initialize the IMU using the built-in REV Control Hub IMU.
         imu = hwMap.get(IMU.class, "imu");
 
         // TODO: Change the the following to match the controller Hub orientation on your robot
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+        );
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
-        // Get references to and initialize the motors. Note that the strings specified here as parameters must match the names assigned in the robot controller configuration.
+        // Get references to and initialize the motors.
+        // Note that the strings specified here as parameters must match the names assigned in the robot controller configuration.
         leftFrontDrive = hwMap.get(DcMotor.class, "left_front_drive");
         leftRearDrive = hwMap.get(DcMotor.class, "left_rear_drive");
         rightFrontDrive = hwMap.get(DcMotor.class, "right_front_drive");
@@ -68,22 +88,32 @@ public class MecanumDrive {
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // TODO: Determine which motor pair needs to be reversed (LEFT or RIGHT).
-        //frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        //backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        //leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        //leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        // Reset encoders and set to RUN_USING_ENCODER mode
+        // Set zeroPowerBehavior to BRAKE to enables a "brake mode". This causes the motor to slow down much faster
+        // when it is coasting, creating a much more controllable drivetrain.
+        leftFrontDrive.setZeroPowerBehavior(BRAKE);
+        leftRearDrive.setZeroPowerBehavior(BRAKE);
+        rightFrontDrive.setZeroPowerBehavior(BRAKE);
+        rightRearDrive.setZeroPowerBehavior(BRAKE);
+
+        // Set the encoders for closed loop speed control, and reset the heading (YAW).
         setMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
+        resetHeading();
 
         if (isPinPointIMU) {
             // Get a reference to and set up the goBilda Pinpoint sensor
             pinpoint = hwMap.get(GoBildaPinpointDriver.class, "pinpoint");
             configurePinpoint();    // configure the goBilda Pinpoint sensor
         }
+
+        telemetry.addLine("Hardware initialized.");
     }
 
     public void setMotorModes(DcMotor.RunMode mode) {
-    // Method to set all motor run modes
+        // Method to set all motor run modes
         leftFrontDrive.setMode(mode);
         rightFrontDrive.setMode(mode);
         leftRearDrive.setMode(mode);
@@ -135,12 +165,19 @@ public class MecanumDrive {
         pinpoint.setPosition(new Pose2D(distanceUnit, x, y, angleUnit, heading));
     }
 
-    public void resetYaw() {
+    public void resetHeading() {
         imu.resetYaw();
     }
 
     public double getHeading(AngleUnit angleUnit) {
-        return imu.getRobotYawPitchRollAngles().getYaw(angleUnit);
+    // Method to return the current robot heading directly from the IMU.
+    // Note, in the Robot Coordinate System, the X axis extends horizontally from your robot to the right, parallel to the ground.
+    // The Y axis extends horizontally from your robot straight ahead, parallel to the ground. The Z axis extends vertically from your robot, towards the ceiling.
+    // Also note, the Robot Coordinate System is right-handed, which means that if you point the thumb of your right hand in the direction of an axis,
+    // rotation around that axis is defined as positive in the direction that the fingers curl.
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        return orientation.getYaw(angleUnit);
+        //return imu.getRobotYawPitchRollAngles().getYaw(angleUnit);
     }
 
     public int getCurrentPosition() {
@@ -148,7 +185,7 @@ public class MecanumDrive {
     }
 
     public void driveFieldRelative(double forward, double strafe, double turn) {
-    // Method to drive robot from the field frame of reference (field relative).
+        // Method to drive robot from the field frame of reference (field relative).
 
         // First, convert direction being asked to drive to polar coordinates
         double theta = Math.atan2(forward, strafe);
@@ -166,7 +203,6 @@ public class MecanumDrive {
     }
 
     public void driveRobotRelative(double forward, double strafe, double turn) {
-
         // Method to drive robot from the robot frame of reference (robot relative).
         // Positive values of y move forward, positive values of x strafe to the right, positive values of rx rotate clockwise.
         //x *= 1.1;   // counteract imperfect strafing (changed to pass in via OpMode)
@@ -198,19 +234,17 @@ public class MecanumDrive {
     }
 
     private static double squarePower(double power) {
-    // Method to square motor power to allow for better micro control.  Returns a double.
+        // Method to square motor power to allow for better micro control.  Returns a double.
         return power * Math.abs(power);  // square magnitude of input while maintaining the sign
     }
 
-    public void encoderDrive(double speed, double distance, DistanceUnit distanceUnit) {
-    /*
-     This function uses the FTC SDK DistanceUnits class, which accepts different input units depending on the user's preference.
+    public void driveByEncoder(double distance, DistanceUnit distanceUnit, double speed) {
+        // This method uses the FTC SDK DistanceUnits class, which accepts different input units depending on the user's preference.
+        // To use, put a double and a DistanceUnit as parameters in a function and then call distanceUnit.toMm(distance). This will
+        // return the number of millimeters that are equivalent to whatever distance in the unit specified. We are working in millimeters
+        // for this, so that's the unit we request from distanceUnit. But if we want to use inches in our function, we could
+        // use distanceUnit.toInches(distance) instead.
 
-     To use, put a double and a DistanceUnit as parameters in a function and then call distanceUnit.toMm(distance). This will
-     return the number of millimeters that are equivalent to whatever distance in the unit specified. We are working in millimeters
-     for this, so that's the unit we request from distanceUnit. But if we want to use inches in our function, we could
-     use distanceUnit.toInches(distance) instead.
-    */
         // Determine new target position. This method assumes that each movement is relative to the robots last position.
         int targetPosition = (int)(distanceUnit.toMm(distance) * TICKS_PER_MM);
         int frontLeftTarget = leftFrontDrive.getCurrentPosition() + targetPosition;
@@ -228,23 +262,56 @@ public class MecanumDrive {
         driveRobotRelative(Math.abs(speed), 0, 0);  // speed must be positive for RUN_TO_POSITION to work correctly
     }
 
-    public void turnToHeading(double targetHeading, double speed) {
-    // Method to turn the robot to a desired heading
+    public void turnToHeading(double targetHeading, double maxSpeed) {
 
-        double error = AngleUnit.normalizeDegrees(targetHeading - getHeading(AngleUnit.DEGREES)); // initial call to seed current error
+        // Initial heading error calculation to seed the WHILE loop
+        //double error = AngleUnit.normalizeDegrees(targetHeading - getHeading(AngleUnit.DEGREES)); // calculate the shortest angular distance to the target (-180 to 180 degrees)
+        double error = normalizeDegrees(-targetHeading + getHeading(AngleUnit.DEGREES)); // calculate the shortest angular distance to the target (-180 to 180 degrees)
 
-        while (Math.abs(error) > HEADING_THRESHOLD) {
-            error = AngleUnit.normalizeDegrees(targetHeading - getHeading(AngleUnit.DEGREES));
-            double turnSpeed = error * kpTurn;  // calculate motor power proportional to the error
+        while (Math.abs(error) > HEADING_TOLERANCE) {
+            //error = AngleUnit.normalizeDegrees(targetHeading - getHeading(AngleUnit.DEGREES));
+            error = normalizeDegrees(-targetHeading + getHeading(AngleUnit.DEGREES));
 
-            driveRobotRelative(0, 0, Range.clip(turnSpeed, -speed, speed)); // Turn robot.  Limit the result to +/- max input speed.
+            // Calculate proportional turn speed.
+            double p = Kp * error;
+
+            // Apply a minimum power to prevent stalling when robot approaches the target heading.
+            if (Math.abs(p) < MIN_TURN_POWER) {
+                p = Math.copySign(MIN_TURN_POWER, p);
+            }
+
+            double turnSpeed = Range.clip(p, -maxSpeed, maxSpeed);
+
+            // Turn robot.  Limit the result to +/- input max speed.
+            driveRobotRelative(0, 0, turnSpeed);
+
+            telemetry.addData("Target Heading", "%.2f", targetHeading);
+            telemetry.addData("Current Heading", "%.2f", getHeading(AngleUnit.DEGREES));
+            telemetry.addData("Error", "%.2f", error);
+            telemetry.addData("P", "%.2f", p);
+            telemetry.addData("Turn Speed", "%.2f", turnSpeed);
+            telemetry.update();
         }
 
-        stopRobot();    // stop movement once target is reached.
+        // Stop movement once target heading is reached.
+        stopRobot();
     }
 
-    public boolean isBusy() {
-    // Method to check for active drive motor(s).  Returns a boolean.
+    public double normalizeDegrees(double degrees) {
+    // Method to normalize heading and avoid both the multiple rotation limits of IF and the freeze risk of WHILE by using modulo arithmetic
+        degrees = degrees % 360;
+
+        if (degrees > 180) {
+            degrees -= 360;
+        } else if (degrees <= -180) {
+            degrees += 360;
+        }
+
+        return degrees;
+    }
+
+    public boolean isMotorBusy() {
+        // Method to check for active drive motor(s).  Returns a boolean.
         return (leftFrontDrive.isBusy() || leftRearDrive.isBusy() || rightFrontDrive.isBusy() || rightRearDrive.isBusy());
     }
 

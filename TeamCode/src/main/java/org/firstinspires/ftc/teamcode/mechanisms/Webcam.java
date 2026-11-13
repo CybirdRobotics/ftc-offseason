@@ -14,23 +14,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.vision.apriltag.AprilTagSingleDetection;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WebcamAprilTag {
+public class Webcam {
 
-    private VisionPortal visionPortal;  // used to manage the video source.
     private AprilTagProcessor aprilTagProcessor;    // processor in FTC SDK used for managing the AprilTag detection process.
 
-    private List<AprilTagDetection> currentDetections = new ArrayList<>();
+    private VisionPortal visionPortal;  // used to manage the video source.
 
-    private Telemetry telemetry;
+    private List<AprilTagDetection> detections = new ArrayList<>();
 
-    /*
-     Initialize hardware and telemetry.
-    */
+     private Telemetry telemetry;
+
+    // Initialize hardware, processors, and telemetry.
     public void init(HardwareMap hwMap, Telemetry telemetry) {
         this.telemetry = telemetry;
 
@@ -38,15 +39,14 @@ public class WebcamAprilTag {
         aprilTagProcessor = new AprilTagProcessor.Builder() // create and initialize an AprilTag processor
 
                 // The following default settings are available to un-comment and edit as needed.
-                .setDrawTagID(true)
-                .setDrawTagOutline(true)
-                .setDrawAxes(true)
-                .setDrawCubeProjection(true)
-                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+                //.setDrawAxes(true) // Changed in V12.0
+                //.setDrawTagOutline(true)
+                .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                .setTagLibrary(AprilTagGameDatabase.getCurrentGameTagLibrary())
                 .setOutputUnits(DistanceUnit.CM, AngleUnit.DEGREES)
+                //.setDrawCubeProjection(false)
 
-                // ----- Camera Calibration -----
+                // == CAMERA CALIBRATION ==
                 // If you do not manually specify calibration parameters, the SDK will attempt
                 // to load a predefined calibration for your camera.
                 //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
@@ -66,7 +66,7 @@ public class WebcamAprilTag {
         // Create the vision portal by using a builder.
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
-        // Set the camera (webcam vs. built-in RC phone camera).
+        // Set the camera (webcam)
         builder.setCamera(hwMap.get(WebcamName.class, "Webcam 1"));
 
         // Choose a camera resolution. Not all cameras support all resolutions.
@@ -93,54 +93,29 @@ public class WebcamAprilTag {
         //visionPortal.setProcessorEnabled(aprilTag, true);
     }
 
-    // Read AprilTag(s).
-    public void update() {
-        currentDetections = aprilTagProcessor.getDetections();
+    // Read AprilTag(s) and return list of AprilTags detected by the AprilTag processor.
+    public List<AprilTagDetection> getDetections() {
+        detections = aprilTagProcessor.getDetections();
+        //telemetry.addData("# AprilTags Detected", detections.size());
+        return detections;
     }
 
-     // Return list of AprilTags detected by the AprilTag processor.
-    public List<AprilTagDetection> getCurrentDetections() {
-        return currentDetections;
-    }
-
-     // Return results from specified AprilTag.  Return NULL if specified tag is not found.
+    // Return results from specified AprilTag.  Return NULL if specified tag is not found.
     public AprilTagDetection getAprilTagByID(int id) {
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.id == id) {
-                return detection;   // return detected tag
+        for (AprilTagDetection detection : detections) {
+            if (detection instanceof AprilTagSingleDetection) {
+                AprilTagSingleDetection singleDetection = (AprilTagSingleDetection) detection;
+                if (singleDetection.id == id) {
+                    return detection;   // return detected tag
+                }
             }
         }
         return null;    // return null if no tag found
     }
 
-     // Send detected AprilTag information to Driver Hub display.
-    public void telemetryAprilTag(AprilTagDetection detection) {
-        if (detection == null) {
-            return;
-        }
-
-        // Display info on detected AprilTag
-        if (detection.metadata != null) {
-/*
-            telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-            telemetry.addLine(String.format("X Y Z %6.1f %6.1f %6.1f (cm)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-            telemetry.addLine(String.format("P R Y %6.1f %6.1f %6.1f (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-            telemetry.addLine(String.format("R B E %6.1f %6.1f %6.1f (cm, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-*/
-            telemetry.addData("\nAprilTag ID", "%d %s", detection.id, detection.metadata.name);
-            telemetry.addData("X Y Z", "%6.1f %6.1f %6.1f  (cm)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z);
-            telemetry.addData("P R Y", "%6.1f %6.1f %6.1f  (degrees)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw);
-            telemetry.addData("R B E", "%6.1f %6.1f %6.1f  (cm, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation);
-
-        } else {
-            telemetry.addData("\nAprilTag ID", "%d Unknown", detection.id);
-            telemetry.addData("Center", "%6.0f %6.0f  (pixels)", detection.center.x, detection.center.y);
-        }
-
-        // Add "key" information to telemetry
-        telemetry.addLine("\nKey:\nX Y Z = +X (right), +Y (forward), +Z (up) dist.");
-        telemetry.addLine("P R Y = Pitch, Roll & Yaw (XYZ rotation)");
-        telemetry.addLine("R B E = Range, Bearing & Elevation");
+    // Refresh AprilTag(s) detections.
+    public void update() {
+        detections = aprilTagProcessor.getDetections();
     }
 
      // Pause vision portal streaming to conserve resources.
@@ -162,5 +137,33 @@ public class WebcamAprilTag {
         if (visionPortal != null) { // vision portal instance is active
             visionPortal.close();
         }
+    }
+
+    // Send detected AprilTag information to Driver Hub display.
+    public void telemetryAprilTag(AprilTagDetection detection) {
+        if (detection == null) {
+            return;
+        }
+
+        // Display info on detected AprilTag
+        if (detection instanceof AprilTagSingleDetection) {
+            AprilTagSingleDetection singleDetection = (AprilTagSingleDetection) detection;
+
+            if (singleDetection.metadata != null) {
+                telemetry.addData("\nAprilTag ID", "%d %s", singleDetection.id, singleDetection.toString());
+                telemetry.addData("X Y Z", "%6.1f %6.1f %6.1f  (cm)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z);
+                telemetry.addData("P R Y", "%6.1f %6.1f %6.1f  (degrees)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw);
+                telemetry.addData("R B E", "%6.1f %6.1f %6.1f  (cm, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation);
+
+            } else {
+                telemetry.addData("\nAprilTag ID", "%d Unknown", singleDetection.id);
+                telemetry.addData("Center", "%6.0f %6.0f  (pixels)", singleDetection.center.x, singleDetection.center.y);
+            }
+        }
+
+        // Add "key" information to telemetry
+        telemetry.addLine("\nKey:\nX Y Z = +X (right), +Y (forward), +Z (up) dist.");
+        telemetry.addLine("P R Y = Pitch, Roll & Yaw (XYZ rotation)");
+        telemetry.addLine("R B E = Range, Bearing & Elevation");
     }
 }
